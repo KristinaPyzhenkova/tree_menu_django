@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  web:
+    container_name: menu_web
+    restart: always
+    image: 2.1.0
+    build: ./menu_project
+    command: sh -c "while ! nc -z db 5432; do sleep 1; done; python3 manage.py migrate; python3 manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - static_volume:/home/menu_project/static
+      - ./menu_project/:/home/menu_project
+    env_file:
+      - .env
+    depends_on:
+      - db
+    ports:
+      - '127.0.0.1:8022:8000'
+  db:
+    container_name: menu_db
+    restart: always
+    image: postgres:14.2-alpine
+    volumes:
+      - ../menu-backend-db/db/:/var/lib/postgresql/data/
+    env_file:
+      - .env.db
+volumes:
+  static_volume: null
